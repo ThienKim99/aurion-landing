@@ -96,7 +96,7 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
     </div>
     <div class="field">
       <label>Số tiền đặt cọc</label>
-      <input value="18.750.000đ (50% giá trị hợp đồng)" disabled style="background:#f5f0e6;color:#6b7a86">
+      <input value="2.000đ (TEST — đổi lại 18.750.000đ khi dùng thật)" disabled style="background:#fff8e6;color:#b8860b">
     </div>
     <p id="formErr" style="color:#c0392b;font-size:.88rem;margin-bottom:8px;display:none"></p>
     <button class="btn-pay" id="btnPay" onclick="submitOrder()">Tạo mã thanh toán →</button>
@@ -112,7 +112,7 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
       <div class="row"><span>Ngân hàng</span><strong>TPBank</strong></div>
       <div class="row"><span>Chủ tài khoản</span><strong>LAM NGOC THANH CUONG</strong></div>
       <div class="row"><span>Số tài khoản</span><strong>00006329016</strong></div>
-      <div class="row" style="margin-top:8px"><span>Số tiền</span><span class="amount">18.750.000đ</span></div>
+      <div class="row" style="margin-top:8px"><span>Số tiền</span><span class="amount" id="displayAmount">2.000đ</span></div>
       <div class="row" style="margin-top:8px;flex-direction:column;align-items:flex-start;gap:6px">
         <span>Nội dung chuyển khoản (BẮT BUỘC)</span>
         <span class="code-badge" id="orderCodeBadge">AET000000</span>
@@ -138,7 +138,7 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
 
 <script>
 var STK="00006329016", BANK="TPBank", HOLDER="LAM NGOC THANH CUONG", STORE="Aurion Elite Travel";
-var DEPOSIT=18750000;
+var DEPOSIT=2000; // TEST MODE - đổi lại thành 18750000 khi dùng thật
 var currentCode="", pollTimer=null;
 
 function genCode(){
