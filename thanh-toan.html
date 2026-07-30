@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thanh toán — Tour VIP Nghĩa Ô | Aurion Elite Travel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#114265;--gold:#dfb160;--cream:#fbf7ef;--ink:#1c2b38;--sans:'Noto Sans',sans-serif;--serif:'Noto Serif',serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--cream);color:var(--ink);min-height:100vh}
+/* Header */
+.topbar{background:var(--navy);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.topbar img{height:48px}
+.topbar span{color:rgba(255,255,255,.7);font-size:.88rem}
+/* Main */
+.wrap{max-width:560px;margin:0 auto;padding:32px 20px 60px}
+h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px}
+.sub{color:#6b7a86;font-size:.92rem;margin-bottom:28px}
+/* Card */
+.card{background:#fff;border-radius:10px;box-shadow:0 8px 32px rgba(17,66,101,.1);padding:28px}
+.card+.card{margin-top:20px}
+.card h2{font-family:var(--serif);color:var(--navy);font-size:1.15rem;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.card h2 .step{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:.82rem;font-weight:700;flex:none}
+/* Form */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.88rem;font-weight:600;color:var(--navy);margin-bottom:6px}
+.field input,.field select{width:100%;padding:12px 14px;border:1.5px solid #d9d2c4;border-radius:6px;font-family:var(--sans);font-size:.95rem;color:var(--ink);background:#fff;outline:none}
+.field input:focus,.field select:focus{border-color:var(--gold)}
+.btn-pay{width:100%;padding:15px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-family:var(--sans);font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px}
+.btn-pay:hover{background:#0d3352}
+.btn-pay:disabled{opacity:.5;cursor:not-allowed}
+/* QR section */
+#qrSection{display:none}
+.qr-wrap{text-align:center;padding:10px 0}
+.qr-wrap img{max-width:260px;width:100%;border-radius:8px;border:1px solid #e8dfd0}
+.qr-info{margin:14px 0;background:#f5f0e6;border-radius:6px;padding:14px 16px}
+.qr-info .row{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;padding:4px 0}
+.qr-info .row span:first-child{color:#6b7a86}
+.qr-info .row strong{color:var(--navy);font-weight:700}
+.qr-info .amount{font-size:1.3rem;color:var(--navy);font-weight:800}
+.code-badge{background:var(--navy);color:var(--gold);font-family:monospace;font-size:1.1rem;font-weight:700;padding:8px 16px;border-radius:6px;display:inline-block;letter-spacing:.1em}
+.note{font-size:.82rem;color:#8a7f6a;margin-top:8px;text-align:center}
+/* Status */
+.status-bar{padding:12px 16px;border-radius:6px;font-size:.9rem;font-weight:600;text-align:center;margin-top:16px}
+.status-pending{background:#fff8e6;color:#b8860b;border:1.5px solid #f0d080}
+.status-success{background:#e8f8ef;color:#1a7a4a;border:1.5px solid #7ecf9e}
+#spinner{display:inline-block;width:16px;height:16px;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Success screen */
+#successScreen{display:none;text-align:center;padding:20px 0}
+#successScreen .icon{font-size:3.5rem;margin-bottom:12px}
+#successScreen h2{font-family:var(--serif);color:#1a7a4a;font-size:1.4rem}
+#successScreen p{color:#6b7a86;margin-top:8px;font-size:.92rem}
+/* Manual confirm */
+.manual-btn{width:100%;margin-top:12px;padding:12px;background:transparent;border:1.5px solid var(--navy);color:var(--navy);border-radius:6px;font-family:var(--sans);font-size:.9rem;cursor:pointer;font-weight:600}
+.manual-btn:hover{background:rgba(17,66,101,.06)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span style="font-family:'Noto Serif',serif;color:#dfb160;font-weight:700;font-size:1.1rem">AURION ELITE TRAVEL</span>
+  <span>Thanh toán an toàn</span>
+</div>
+
+<div class="wrap">
+  <h1>Đặt chỗ Tour VIP Nghĩa Ô</h1>
+  <p class="sub">7 ngày 6 đêm · Khảo sát TMĐT Trung Quốc · Trọn gói</p>
+
+  <!-- Bước 1: Điền thông tin -->
+  <div class="card" id="formCard">
+    <h2><span class="step">1</span>Thông tin của bạn</h2>
+    <div class="field">
+      <label>Họ và tên *</label>
+      <input id="f_name" type="text" placeholder="Nguyễn Văn A" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>Số điện thoại / Zalo *</label>
+      <input id="f_phone" type="tel" placeholder="09xx xxx xxx" autocomplete="tel">
+    </div>
+    <div class="field">
+      <label>Email *</label>
+      <input id="f_email" type="email" placeholder="email@example.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Lĩnh vực kinh doanh</label>
+      <select id="f_sector">
+        <option value="">-- Chọn lĩnh vực --</option>
+        <option>Bán lẻ / bán online (TMĐT)</option>
+        <option>Nhập khẩu – phân phối sỉ</option>
+        <option>Sản xuất / gia công</option>
+        <option>Khác</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Số tiền đặt cọc</label>
+      <input value="18.750.000đ (50% giá trị hợp đồng)" disabled style="background:#f5f0e6;color:#6b7a86">
+    </div>
+    <p id="formErr" style="color:#c0392b;font-size:.88rem;margin-bottom:8px;display:none"></p>
+    <button class="btn-pay" id="btnPay" onclick="submitOrder()">Tạo mã thanh toán →</button>
+  </div>
+
+  <!-- Bước 2: QR Code -->
+  <div class="card" id="qrSection">
+    <h2><span class="step">2</span>Quét QR chuyển khoản</h2>
+    <div class="qr-wrap">
+      <img id="qrImg" src="" alt="QR thanh toán">
+    </div>
+    <div class="qr-info">
+      <div class="row"><span>Ngân hàng</span><strong>TPBank</strong></div>
+      <div class="row"><span>Chủ tài khoản</span><strong>LAM NGOC THANH CUONG</strong></div>
+      <div class="row"><span>Số tài khoản</span><strong>00006329016</strong></div>
+      <div class="row" style="margin-top:8px"><span>Số tiền</span><span class="amount">18.750.000đ</span></div>
+      <div class="row" style="margin-top:8px;flex-direction:column;align-items:flex-start;gap:6px">
+        <span>Nội dung chuyển khoản (BẮT BUỘC)</span>
+        <span class="code-badge" id="orderCodeBadge">AET000000</span>
+      </div>
+    </div>
+    <p class="note">⚠️ Nhập đúng nội dung chuyển khoản để hệ thống tự xác nhận</p>
+
+    <div class="status-bar status-pending" id="statusBar">
+      <span id="spinner"></span>Đang chờ thanh toán...
+    </div>
+
+    <div id="successScreen">
+      <div class="icon">✅</div>
+      <h2>Thanh toán thành công!</h2>
+      <p>Aurion Elite Travel sẽ liên hệ xác nhận chỗ trong vòng 24h.<br>Hotline: <strong>0377.469.392</strong></p>
+    </div>
+
+    <button class="manual-btn" id="btnManual" onclick="checkManual()">
+      Tôi đã chuyển khoản nhưng chưa thấy xác nhận →
+    </button>
+  </div>
+</div>
+
+<script>
+var STK="00006329016", BANK="TPBank", HOLDER="LAM NGOC THANH CUONG", STORE="Aurion Elite Travel";
+var DEPOSIT=18750000;
+var currentCode="", pollTimer=null;
+
+function genCode(){
+  return "AET"+String(Math.floor(Math.random()*900000)+100000);
+}
+
+function buildQR(code){
+  var des=encodeURIComponent(code);
+  var h=encodeURIComponent(HOLDER);
+  var s=encodeURIComponent(STORE);
+  return "https://vietqr.app/img?acc="+STK+"&bank="+BANK+"&amount="+DEPOSIT+"&des="+des+"&template=compact&showinfo=true&fullacc=true&holder="+h+"&store="+s;
+}
+
+function validate(){
+  var n=document.getElementById("f_name").value.trim();
+  var p=document.getElementById("f_phone").value.trim();
+  var e=document.getElementById("f_email").value.trim();
+  var err=document.getElementById("formErr");
+  if(!n){err.textContent="Vui lòng nhập Họ tên.";err.style.display="block";return false;}
+  if(!p||!/^0\d{8,10}$/.test(p.replace(/\s/g,""))){err.textContent="Số điện thoại không hợp lệ (bắt đầu bằng 0, 9-11 số).";err.style.display="block";return false;}
+  if(!e||!/^[^@]+@[^@]+\.[^@]+$/.test(e)){err.textContent="Email không hợp lệ.";err.style.display="block";return false;}
+  err.style.display="none";return true;
+}
+
+async function submitOrder(){
+  if(!validate())return;
+  var btn=document.getElementById("btnPay");
+  btn.disabled=true; btn.textContent="Đang tạo mã...";
+
+  currentCode=genCode();
+  var order={
+    orderCode:currentCode,
+    name:document.getElementById("f_name").value.trim(),
+    phone:document.getElementById("f_phone").value.trim(),
+    email:document.getElementById("f_email").value.trim(),
+    sector:document.getElementById("f_sector").value,
+    amount:DEPOSIT,
+    product:"Tour VIP Nghĩa Ô — Đặt cọc 50%",
+    status:"pending"
+  };
+
+  // Lưu đơn qua Netlify Function
+  try{
+    await fetch("/.netlify/functions/order",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(order)
+    });
+  }catch(e){console.log("order function not available:",e);}
+
+  // Hiện QR
+  document.getElementById("qrImg").src=buildQR(currentCode);
+  document.getElementById("orderCodeBadge").textContent=currentCode;
+  document.getElementById("formCard").style.display="none";
+  document.getElementById("qrSection").style.display="block";
+  window.scrollTo(0,0);
+
+  // Bắt đầu polling
+  startPolling(currentCode);
+}
+
+function startPolling(code){
+  if(pollTimer)clearInterval(pollTimer);
+  pollTimer=setInterval(function(){checkStatus(code);},5000);
+}
+
+async function checkStatus(code){
+  try{
+    var res=await fetch("/.netlify/functions/order?code="+code);
+    if(!res.ok)return;
+    var data=await res.json();
+    if(data.status==="success"){
+      clearInterval(pollTimer);
+      showSuccess();
+    }
+  }catch(e){/* function not deployed yet */}
+}
+
+async function checkManual(){
+  var btn=document.getElementById("btnManual");
+  btn.textContent="Đang kiểm tra..."; btn.disabled=true;
+  await new Promise(r=>setTimeout(r,2000));
+  // Check lại
+  try{
+    var res=await fetch("/.netlify/functions/order?code="+currentCode);
+    var data=await res.json();
+    if(data.status==="success"){showSuccess();return;}
+  }catch(e){}
+  // Nếu chưa tự động → thông báo liên hệ
+  alert("Hệ thống chưa ghi nhận giao dịch của bạn.\n\nVui lòng gọi Aurion: 0377.469.392\nChụp màn hình chuyển khoản và gửi qua Zalo để được xác nhận thủ công.");
+  btn.textContent="Tôi đã chuyển khoản nhưng chưa thấy xác nhận →";
+  btn.disabled=false;
+}
+
+function showSuccess(){
+  document.getElementById("statusBar").style.display="none";
+  document.getElementById("btnManual").style.display="none";
+  document.getElementById("successScreen").style.display="block";
+}
+</script>
+</body>
+</html>
