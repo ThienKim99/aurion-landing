@@ -483,6 +483,7 @@
         <p class="fm-sub">Chỉ cần để lại số, chuyên gia của Aurion sẽ chủ động liên hệ bạn.</p>
         <div class="field"><label for="ten">Họ và tên *</label><input id="ten" type="text" placeholder="Nguyễn Văn A"></div>
         <div class="field"><label for="sdt">Số điện thoại / Zalo *</label><input id="sdt" type="tel" placeholder="09xx xxx xxx"></div>
+        <div class="field"><label for="email">Email *</label><input id="email" type="email" placeholder="email@example.com"></div>
         <div class="q">
           <span class="q-label">Bạn muốn Aurion liên hệ qua đâu?</span>
           <div class="opts">
@@ -528,20 +529,22 @@
   })();
   // ==== CẤU HÌNH GOOGLE SHEET ====
   // Dán đường link "Web app" của Google Apps Script vào giữa hai dấu nháy dưới đây:
-  var SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbyDEMFtcrGqBV42Es5U8opEAsjK5s2xC0Gv10QCALL2wxocQu71tpzfkqKRnH6WoV0p/exec";
+  var SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbzXm1VxJ6DssZ15J3_12fKcPXpQ1Kz1Cd1OQi6Npcf0st_M0el1tMpqK1GxSho5DOeUag/exec";
 
   document.getElementById('submitBtn').addEventListener('click',function(e){
     e.preventDefault();
     function rv(n){var el=document.querySelector('input[name="'+n+'"]:checked');return el?el.value:'';}
     var ten=document.getElementById('ten').value.trim(),sdt=document.getElementById('sdt').value.trim(),
+        email=document.getElementById('email').value.trim(),
         kenh=rv('kenh'),loinhan=document.getElementById('loinhan').value.trim();
     var status=document.getElementById('formStatus');
     if(!ten||!sdt){status.style.color='#c0392b';status.textContent='Vui lòng nhập Họ tên và Số điện thoại để chúng tôi liên hệ lại.';return;}
+    if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){status.style.color='#c0392b';status.textContent='Vui lòng nhập email hợp lệ để nhận thông tin từ Aurion.';return;}
 
     // Nếu chưa cấu hình Sheet -> tạm thời mở email như trước (form vẫn dùng được)
     if(SHEET_ENDPOINT.indexOf('http')!==0){
       var subject='Đăng ký nhanh: '+ten;
-      var body='Họ tên: '+ten+'\n'+'Điện thoại/Zalo: '+sdt+'\n'+'Kênh liên hệ: '+kenh+'\n'+'Lời nhắn: '+loinhan+'\n';
+      var body='Họ tên: '+ten+'\n'+'Điện thoại/Zalo: '+sdt+'\n'+'Email: '+email+'\n'+'Kênh liên hệ: '+kenh+'\n'+'Lời nhắn: '+loinhan+'\n';
       window.location.href='mailto:aurionelite.travel@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
       return;
     }
@@ -549,12 +552,13 @@
     var btn=this; btn.style.pointerEvents='none'; btn.style.opacity='.6';
     status.style.color='#5b6771'; status.textContent='Đang gửi…';
     var fd=new FormData();
-    fd.append('ten',ten); fd.append('sdt',sdt); fd.append('kenh',kenh); fd.append('loinhan',loinhan);
+    fd.append('form','dangky');
+    fd.append('ten',ten); fd.append('sdt',sdt); fd.append('email',email); fd.append('kenh',kenh); fd.append('loinhan',loinhan);
     fetch(SHEET_ENDPOINT,{method:'POST',body:fd,mode:'no-cors'})
       .then(function(){
         status.style.color='#1f7a4d';
         status.textContent='Cảm ơn bạn! Aurion Elite Travel sẽ liên hệ trong thời gian sớm nhất.';
-        document.getElementById('ten').value='';document.getElementById('sdt').value='';
+        document.getElementById('ten').value='';document.getElementById('sdt').value='';document.getElementById('email').value='';
         document.getElementById('loinhan').value='';
         document.querySelectorAll('input[name="kenh"]').forEach(function(x){x.checked=false});
         btn.style.pointerEvents='';btn.style.opacity='';
