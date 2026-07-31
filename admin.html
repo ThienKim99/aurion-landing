@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin — Aurion Elite Travel</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--navy:#114265;--gold:#dfb160;--cream:#fbf7ef;--ink:#1c2b38;--sans:'Noto Sans',sans-serif;--serif:'Noto Serif',serif}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--sans);background:#f0f2f5;color:var(--ink)}
-.topbar{background:var(--navy);padding:14px 24px;display:flex;align-items:center;gap:16px}
-.topbar h1{font-family:var(--serif);color:var(--gold);font-size:1.15rem}
-.topbar span{color:rgba(255,255,255,.6);font-size:.82rem}
-.tabs{display:flex;gap:0;background:#fff;border-bottom:2px solid #e2dbd0;padding:0 24px}
+.topbar{background:var(--navy);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.topbar h1{font-family:var(--serif);color:var(--gold);font-size:1.1rem}
+.topbar .refresh{background:rgba(255,255,255,.15);border:none;color:#fff;padding:8px 14px;border-radius:4px;cursor:pointer;font-size:.85rem}
+.topbar .refresh:hover{background:rgba(255,255,255,.25)}
+.tabs{display:flex;background:#fff;border-bottom:2px solid #e2dbd0;padding:0 24px}
 .tab-btn{padding:14px 22px;border:none;background:none;font-family:var(--sans);font-size:.95rem;font-weight:600;color:#6b7a86;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
 .tab-btn.active{color:var(--navy);border-bottom-color:var(--navy)}
 .content{padding:24px;max-width:1100px;margin:0 auto}
@@ -23,18 +23,20 @@ body{font-family:var(--sans);background:#f0f2f5;color:var(--ink)}
 .btn{padding:9px 18px;border-radius:6px;border:none;font-family:var(--sans);font-size:.88rem;font-weight:700;cursor:pointer}
 .btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:#0d3352}
 .btn-sm{padding:6px 12px;font-size:.82rem;border-radius:4px}
-.btn-outline{background:transparent;border:1.5px solid var(--navy);color:var(--navy)}.btn-outline:hover{background:rgba(17,66,101,.06)}
-.btn-red{background:#c0392b;color:#fff}.btn-red:hover{background:#a93226}
+.btn-outline{background:transparent;border:1.5px solid var(--navy);color:var(--navy)}
+.btn-red{background:#c0392b;color:#fff}
+.btn-green{background:#1a7a4a;color:#fff}
 .card{background:#fff;border-radius:10px;box-shadow:0 4px 18px rgba(17,66,101,.08);overflow:hidden}
 table{width:100%;border-collapse:collapse}
 th{background:#f5f0e6;color:var(--navy);font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:11px 14px;text-align:left;white-space:nowrap}
 td{padding:12px 14px;font-size:.9rem;border-top:1px solid #f0ebe0;vertical-align:middle}
 tr:hover td{background:#fdfaf4}
-.badge{padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:700}
+.badge{padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:700;display:inline-block}
 .badge-pending{background:#fff8e6;color:#b8860b}
 .badge-success{background:#e8f8ef;color:#1a7a4a}
 .badge-cancelled{background:#fde;color:#c0392b}
-.empty{text-align:center;padding:48px;color:#8a7f6a;font-size:.95rem}
+.empty{text-align:center;padding:48px;color:#8a7f6a}
+.loading{text-align:center;padding:32px;color:#8a7f6a}
 /* Modal */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center}
 .overlay.open{display:flex}
@@ -43,80 +45,76 @@ tr:hover td{background:#fdfaf4}
 .mfield{margin-bottom:14px}
 .mfield label{display:block;font-size:.85rem;font-weight:600;color:var(--navy);margin-bottom:5px}
 .mfield input,.mfield select,.mfield textarea{width:100%;padding:10px 12px;border:1.5px solid #d9d2c4;border-radius:6px;font-family:var(--sans);font-size:.92rem;outline:none}
-.mfield input:focus,.mfield select:focus,.mfield textarea:focus{border-color:var(--gold)}
+.mfield input:focus,.mfield select:focus{border-color:var(--gold)}
 .modal-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
-@media(max-width:600px){.tabs{padding:0 12px}.content{padding:14px}.tab-btn{padding:12px 14px;font-size:.88rem}th,td{font-size:.82rem;padding:9px 10px}}
+@media(max-width:600px){.tabs{padding:0 12px}.content{padding:14px}.tab-btn{padding:12px 14px;font-size:.88rem}th,td{padding:9px 10px;font-size:.82rem}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <h1>Admin Panel</h1>
-    <span>Aurion Elite Travel</span>
+    <h1>Admin Panel — Aurion Elite Travel</h1>
   </div>
+  <button class="refresh" onclick="loadAll()">🔄 Làm mới</button>
 </div>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('orders')">📦 Đơn hàng</button>
-  <button class="tab-btn" onclick="switchTab('customers')">👤 Khách hàng</button>
-  <button class="tab-btn" onclick="switchTab('products')">🏷️ Sản phẩm</button>
+  <button class="tab-btn active" onclick="switchTab('orders',this)">📦 Đơn hàng</button>
+  <button class="tab-btn" onclick="switchTab('customers',this)">👤 Khách hàng</button>
+  <button class="tab-btn" onclick="switchTab('products',this)">🏷️ Sản phẩm</button>
 </div>
 
 <div class="content">
-
-  <!-- ===== ĐƠN HÀNG ===== -->
+  <!-- ĐƠN HÀNG -->
   <div id="panel-orders" class="panel active">
     <div class="toolbar">
       <h2>Quản lý đơn hàng</h2>
       <button class="btn btn-navy" onclick="openModal('order')">+ Thêm đơn</button>
     </div>
     <div class="card">
-      <table id="tblOrders">
-        <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Sản phẩm</th><th>Số tiền</th><th>Trạng thái</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
-        <tbody id="bodyOrders"><tr><td colspan="7" class="empty">Đang tải...</td></tr></tbody>
+      <table><thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Sản phẩm</th><th>Số tiền</th><th>Trạng thái</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
+        <tbody id="bodyOrders"><tr><td colspan="7" class="loading">⏳ Đang tải...</td></tr></tbody>
       </table>
     </div>
   </div>
 
-  <!-- ===== KHÁCH HÀNG ===== -->
+  <!-- KHÁCH HÀNG -->
   <div id="panel-customers" class="panel">
     <div class="toolbar">
       <h2>Quản lý khách hàng</h2>
       <button class="btn btn-navy" onclick="openModal('customer')">+ Thêm khách</button>
     </div>
     <div class="card">
-      <table id="tblCustomers">
-        <thead><tr><th>Họ tên</th><th>Điện thoại</th><th>Email</th><th>Lĩnh vực</th><th>Ngày đăng ký</th><th>Thao tác</th></tr></thead>
-        <tbody id="bodyCustomers"><tr><td colspan="6" class="empty">Đang tải...</td></tr></tbody>
+      <table><thead><tr><th>Họ tên</th><th>Điện thoại</th><th>Email</th><th>Lĩnh vực</th><th>Ngày đăng ký</th></tr></thead>
+        <tbody id="bodyCustomers"><tr><td colspan="5" class="loading">⏳ Đang tải...</td></tr></tbody>
       </table>
     </div>
   </div>
 
-  <!-- ===== SẢN PHẨM ===== -->
+  <!-- SẢN PHẨM -->
   <div id="panel-products" class="panel">
     <div class="toolbar">
       <h2>Quản lý sản phẩm</h2>
       <button class="btn btn-navy" onclick="openModal('product')">+ Thêm SP</button>
     </div>
     <div class="card">
-      <table id="tblProducts">
-        <thead><tr><th>Tên sản phẩm</th><th>Loại</th><th>Giá</th><th>Tồn kho</th><th>Thao tác</th></tr></thead>
-        <tbody id="bodyProducts"><tr><td colspan="5" class="empty">Đang tải...</td></tr></tbody>
+      <table><thead><tr><th>Tên sản phẩm</th><th>Loại</th><th>Giá</th><th>Tồn kho</th><th>Thao tác</th></tr></thead>
+        <tbody id="bodyProducts"><tr><td colspan="5" class="loading">⏳ Đang tải...</td></tr></tbody>
       </table>
     </div>
   </div>
-
 </div>
 
-<!-- ===== MODAL ĐƠN HÀNG ===== -->
+<!-- MODAL ĐƠN HÀNG -->
 <div class="overlay" id="modal-order">
   <div class="modal">
-    <h3 id="modal-order-title">Thêm đơn hàng mới</h3>
-    <input type="hidden" id="mo_id">
+    <h3 id="mo_title">Thêm đơn hàng</h3>
+    <input type="hidden" id="mo_binid">
     <div class="mfield"><label>Mã đơn hàng</label><input id="mo_code" placeholder="AET123456 (để trống tự sinh)"></div>
-    <div class="mfield"><label>Họ tên khách *</label><input id="mo_name" placeholder="Nguyễn Văn A"></div>
-    <div class="mfield"><label>Điện thoại / Zalo</label><input id="mo_phone" placeholder="09xx xxx xxx"></div>
+    <div class="mfield"><label>Họ tên khách *</label><input id="mo_name"></div>
+    <div class="mfield"><label>Điện thoại / Zalo</label><input id="mo_phone"></div>
+    <div class="mfield"><label>Email</label><input id="mo_email" type="email"></div>
     <div class="mfield"><label>Sản phẩm</label>
       <select id="mo_product"><option>Tour VIP Nghĩa Ô — Đặt cọc 50%</option><option>Tour VIP Nghĩa Ô — Thanh toán đủ 100%</option></select>
     </div>
@@ -126,218 +124,213 @@ tr:hover td{background:#fdfaf4}
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('order')">Hủy</button>
-      <button class="btn btn-navy" onclick="saveOrder()">Lưu đơn hàng</button>
+      <button class="btn btn-navy" onclick="saveOrder()">Lưu</button>
     </div>
   </div>
 </div>
 
-<!-- ===== MODAL KHÁCH HÀNG ===== -->
+<!-- MODAL KHÁCH HÀNG -->
 <div class="overlay" id="modal-customer">
   <div class="modal">
     <h3>Thêm khách hàng</h3>
-    <div class="mfield"><label>Họ tên *</label><input id="mc_name" placeholder="Nguyễn Văn A"></div>
-    <div class="mfield"><label>Điện thoại / Zalo *</label><input id="mc_phone" placeholder="09xx xxx xxx"></div>
-    <div class="mfield"><label>Email</label><input id="mc_email" type="email" placeholder="email@example.com"></div>
-    <div class="mfield"><label>Lĩnh vực kinh doanh</label>
+    <div class="mfield"><label>Họ tên *</label><input id="mc_name"></div>
+    <div class="mfield"><label>Điện thoại *</label><input id="mc_phone"></div>
+    <div class="mfield"><label>Email</label><input id="mc_email" type="email"></div>
+    <div class="mfield"><label>Lĩnh vực</label>
       <select id="mc_sector"><option value="">--</option><option>Bán lẻ / bán online (TMĐT)</option><option>Nhập khẩu – phân phối sỉ</option><option>Sản xuất / gia công</option><option>Khác</option></select>
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('customer')">Hủy</button>
-      <button class="btn btn-navy" onclick="saveCustomer()">Lưu khách hàng</button>
+      <button class="btn btn-navy" onclick="saveCustomer()">Lưu</button>
     </div>
   </div>
 </div>
 
-<!-- ===== MODAL SẢN PHẨM ===== -->
+<!-- MODAL SẢN PHẨM -->
 <div class="overlay" id="modal-product">
   <div class="modal">
     <h3>Thêm sản phẩm</h3>
-    <div class="mfield"><label>Tên sản phẩm *</label><input id="mp_name" placeholder="Tour VIP Nghĩa Ô"></div>
+    <div class="mfield"><label>Tên sản phẩm *</label><input id="mp_name"></div>
     <div class="mfield"><label>Loại</label>
-      <select id="mp_type"><option value="service">Dịch vụ / Tour</option><option value="digital">Sản phẩm số</option><option value="physical">Sản phẩm vật lý</option></select>
+      <select id="mp_type" onchange="toggleStock()"><option value="service">Dịch vụ / Tour</option><option value="digital">Sản phẩm số</option><option value="physical">Sản phẩm vật lý</option></select>
     </div>
-    <div class="mfield"><label>Giá (VND)</label><input id="mp_price" type="number" placeholder="37500000"></div>
-    <div class="mfield"><label>Mô tả</label><textarea id="mp_desc" rows="3" placeholder="Mô tả ngắn..."></textarea></div>
-    <div class="mfield" id="stockField"><label>Tồn kho (chỉ điền cho sản phẩm vật lý)</label><input id="mp_stock" type="number" placeholder="Để trống nếu không áp dụng"></div>
+    <div class="mfield"><label>Giá (VND)</label><input id="mp_price" type="number"></div>
+    <div class="mfield"><label>Mô tả</label><textarea id="mp_desc" rows="2"></textarea></div>
+    <div class="mfield" id="stockField" style="display:none"><label>Tồn kho</label><input id="mp_stock" type="number"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('product')">Hủy</button>
-      <button class="btn btn-navy" onclick="saveProduct()">Lưu sản phẩm</button>
+      <button class="btn btn-navy" onclick="saveProduct()">Lưu</button>
     </div>
   </div>
 </div>
 
 <script>
-// ===== Storage (localStorage cho demo, thay bằng API thật khi deploy) =====
-var DB={
-  orders: JSON.parse(localStorage.getItem('aet_orders')||'[]'),
-  customers: JSON.parse(localStorage.getItem('aet_customers')||'[]'),
-  products: JSON.parse(localStorage.getItem('aet_products')||'[]')
-};
-// Seed data mẫu nếu chưa có
-if(!DB.products.length){
-  DB.products=[
-    {id:1,name:"Tour VIP Nghĩa Ô",type:"service",price:37500000,desc:"7N6Đ khảo sát TMĐT Trung Quốc trọn gói",stock:null,createdAt:new Date().toISOString()}
-  ];
-  save('products');
+var JSONBIN_KEY="$2a$10$xVrPdo4UpUIWmuf7NlPw/eacHNVZpRTsi/fypuRqfxtgVY/IyBvmm";
+var BASE="https://api.jsonbin.io/v3/b";
+var allBins=[];
+
+// ===== JSONBin Helpers =====
+async function getBins(){
+  var r=await fetch(BASE,{headers:{"X-Master-Key":JSONBIN_KEY}});
+  if(!r.ok)return[];
+  var d=await r.json(); return d.result||[];
 }
-if(!DB.customers.length){
-  DB.customers=[
-    {id:1,name:"Phan Xuân Hữu",phone:"0909000001",email:"huu@example.com",sector:"Bán lẻ / bán online (TMĐT)",createdAt:"2026-06-01T08:00:00Z"},
-    {id:2,name:"Chu Thế Mạnh",phone:"0909000002",email:"manh@example.com",sector:"Nhập khẩu – phân phối sỉ",createdAt:"2026-06-01T08:00:00Z"},
-    {id:3,name:"Nguyễn Hữu Đức",phone:"0909000003",email:"duc@example.com",sector:"Bán lẻ / bán online (TMĐT)",createdAt:"2026-06-01T08:00:00Z"}
-  ];
-  save('customers');
+async function readBin(id){
+  var r=await fetch(BASE+"/"+id+"/latest",{headers:{"X-Master-Key":JSONBIN_KEY}});
+  if(!r.ok)return null;
+  var d=await r.json(); return {...d.record,_binId:id};
 }
-function save(key){localStorage.setItem('aet_'+key,JSON.stringify(DB[key]));}
-function fmtMoney(n){return Number(n).toLocaleString('vi-VN')+"đ";}
-function fmtDate(s){if(!s)return"";return new Date(s).toLocaleDateString('vi-VN');}
-function badgeStatus(s){
-  var map={pending:"Chờ thanh toán",success:"Đã thanh toán",cancelled:"Đã hủy"};
-  return '<span class="badge badge-'+s+'">'+(map[s]||s)+'</span>';
+async function createBin(name,data){
+  var r=await fetch(BASE,{method:"POST",headers:{"X-Master-Key":JSONBIN_KEY,"Content-Type":"application/json","X-Bin-Name":name,"X-Bin-Private":"false"},body:JSON.stringify(data)});
+  return await r.json();
+}
+async function updateBin(id,data){
+  var r=await fetch(BASE+"/"+id,{method:"PUT",headers:{"X-Master-Key":JSONBIN_KEY,"Content-Type":"application/json"},body:JSON.stringify(data)});
+  return await r.json();
+}
+async function deleteBin(id){
+  await fetch(BASE+"/"+id,{method:"DELETE",headers:{"X-Master-Key":JSONBIN_KEY}});
 }
 
-// ===== RENDER =====
-function renderOrders(){
-  var tb=document.getElementById('bodyOrders');
-  if(!DB.orders.length){tb.innerHTML='<tr><td colspan="7" class="empty">Chưa có đơn hàng nào. Bấm "+ Thêm đơn" để tạo.</td></tr>';return;}
-  tb.innerHTML=DB.orders.map(function(o,i){
-    return '<tr><td><code style="font-size:.82rem">'+o.orderCode+'</code></td><td>'+o.name+'<br><span style="color:#8a7f6a;font-size:.8rem">'+o.phone+'</span></td>'
-      +'<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+o.product+'</td>'
-      +'<td><strong>'+fmtMoney(o.amount)+'</strong></td><td>'+badgeStatus(o.status)+'</td>'
-      +'<td>'+fmtDate(o.createdAt)+'</td>'
-      +'<td style="white-space:nowrap"><button class="btn btn-sm btn-outline" onclick="editOrder('+i+')">Sửa</button> '
-      +(o.status!=='success'?'<button class="btn btn-sm btn-navy" onclick="markPaid('+i+')">✓ Đã TT</button> ':'')
-      +'<button class="btn btn-sm btn-red" onclick="delOrder('+i+')" style="margin-left:4px">×</button></td></tr>';
-  }).join('');
-}
-function renderCustomers(){
-  var tb=document.getElementById('bodyCustomers');
-  if(!DB.customers.length){tb.innerHTML='<tr><td colspan="6" class="empty">Chưa có khách hàng nào.</td></tr>';return;}
-  tb.innerHTML=DB.customers.map(function(c,i){
-    return '<tr><td><strong>'+c.name+'</strong></td><td>'+c.phone+'</td><td>'+c.email+'</td><td>'+c.sector+'</td>'
-      +'<td>'+fmtDate(c.createdAt)+'</td>'
-      +'<td><button class="btn btn-sm btn-red" onclick="delCustomer('+i+')">×</button></td></tr>';
-  }).join('');
-}
-function renderProducts(){
-  var tb=document.getElementById('bodyProducts');
-  if(!DB.products.length){tb.innerHTML='<tr><td colspan="5" class="empty">Chưa có sản phẩm nào.</td></tr>';return;}
-  tb.innerHTML=DB.products.map(function(p,i){
-    var typeMap={service:"Dịch vụ / Tour",digital:"Sản phẩm số",physical:"Sản phẩm vật lý"};
-    var stock=p.type==='physical'?(p.stock||0)+' cái':'—';
-    return '<tr><td><strong>'+p.name+'</strong><br><span style="color:#8a7f6a;font-size:.8rem">'+p.desc+'</span></td>'
-      +'<td>'+typeMap[p.type]+'</td><td><strong>'+fmtMoney(p.price)+'</strong></td><td>'+stock+'</td>'
-      +'<td><button class="btn btn-sm btn-red" onclick="delProduct('+i+')">×</button></td></tr>';
-  }).join('');
-}
-function renderAll(){renderOrders();renderCustomers();renderProducts();}
-renderAll();
-
-// ===== TABS =====
-function switchTab(t){
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
-  event.target.classList.add('active');
-  document.getElementById('panel-'+t).classList.add('active');
-}
-
-// ===== MODAL =====
-function openModal(type){
-  if(type==='order'){
-    document.getElementById('modal-order-title').textContent='Thêm đơn hàng mới';
-    document.getElementById('mo_id').value='';
-    document.getElementById('mo_code').value='';
-    document.getElementById('mo_name').value='';
-    document.getElementById('mo_phone').value='';
-    document.getElementById('mo_amount').value='';
-    document.getElementById('mo_status').value='pending';
-  }
-  document.getElementById('modal-'+type).classList.add('open');
-}
-function closeModal(type){document.getElementById('modal-'+type).classList.remove('open');}
-// Close on overlay click
-document.querySelectorAll('.overlay').forEach(function(el){
-  el.addEventListener('click',function(e){if(e.target===el)el.classList.remove('open');});
-});
-// Sản phẩm vật lý mới hiện tồn kho
-document.getElementById('mp_type').addEventListener('change',function(){
-  document.getElementById('stockField').style.display=this.value==='physical'?'block':'none';
-});
-document.getElementById('stockField').style.display='none';
-
-// ===== SAVE =====
-function genOrderCode(){return "AET"+String(Math.floor(Math.random()*900000)+100000);}
-function saveOrder(){
-  var code=document.getElementById('mo_code').value.trim()||genOrderCode();
-  var name=document.getElementById('mo_name').value.trim();
-  if(!name){alert('Vui lòng nhập tên khách hàng.');return;}
-  var editId=document.getElementById('mo_id').value;
-  var obj={
-    orderCode:code,name:name,phone:document.getElementById('mo_phone').value.trim(),
-    product:document.getElementById('mo_product').value,
-    amount:document.getElementById('mo_amount').value||18750000,
-    status:document.getElementById('mo_status').value,
-    createdAt:editId?undefined:new Date().toISOString()
-  };
-  if(editId){
-    var idx=parseInt(editId);
-    obj.createdAt=DB.orders[idx].createdAt;
-    DB.orders[idx]=obj;
-  } else {
-    DB.orders.unshift(obj);
-    // Auto-add customer nếu chưa có
-    if(!DB.customers.find(function(c){return c.phone===obj.phone;})){
-      DB.customers.unshift({id:Date.now(),name:obj.name,phone:obj.phone,email:'',sector:'',createdAt:new Date().toISOString()});
-      save('customers');
-    }
-  }
-  save('orders');renderOrders();closeModal('order');
-}
-function editOrder(i){
-  var o=DB.orders[i];
-  document.getElementById('modal-order-title').textContent='Chỉnh sửa đơn hàng';
-  document.getElementById('mo_id').value=i;
-  document.getElementById('mo_code').value=o.orderCode;
-  document.getElementById('mo_name').value=o.name;
-  document.getElementById('mo_phone').value=o.phone;
-  document.getElementById('mo_amount').value=o.amount;
-  document.getElementById('mo_status').value=o.status;
-  document.getElementById('modal-order').classList.add('open');
-}
-function markPaid(i){
-  if(!confirm('Xác nhận đơn hàng '+DB.orders[i].orderCode+' đã thanh toán?'))return;
-  DB.orders[i].status='success';DB.orders[i].paidAt=new Date().toISOString();
-  save('orders');renderOrders();
-}
-function delOrder(i){if(!confirm('Xóa đơn hàng này?'))return;DB.orders.splice(i,1);save('orders');renderOrders();}
-
-function saveCustomer(){
-  var name=document.getElementById('mc_name').value.trim();
-  var phone=document.getElementById('mc_phone').value.trim();
-  if(!name||!phone){alert('Vui lòng nhập Họ tên và Điện thoại.');return;}
-  DB.customers.unshift({id:Date.now(),name:name,phone:phone,email:document.getElementById('mc_email').value.trim(),sector:document.getElementById('mc_sector').value,createdAt:new Date().toISOString()});
-  save('customers');renderCustomers();closeModal('customer');
-}
-function delCustomer(i){if(!confirm('Xóa khách hàng này?'))return;DB.customers.splice(i,1);save('customers');renderCustomers();}
-
-function saveProduct(){
-  var name=document.getElementById('mp_name').value.trim();
-  if(!name){alert('Vui lòng nhập tên sản phẩm.');return;}
-  var type=document.getElementById('mp_type').value;
-  var stock=type==='physical'?(parseInt(document.getElementById('mp_stock').value)||0):null;
-  DB.products.push({id:Date.now(),name:name,type:type,price:document.getElementById('mp_price').value||0,desc:document.getElementById('mp_desc').value,stock:stock,createdAt:new Date().toISOString()});
-  save('products');renderProducts();closeModal('product');
-}
-function delProduct(i){if(!confirm('Xóa sản phẩm này?'))return;DB.products.splice(i,1);save('products');renderProducts();}
-
-// ===== Load đơn từ Netlify Functions (nếu deploy) =====
-async function loadOrdersFromAPI(){
+// ===== Load All =====
+async function loadAll(){
   try{
-    var res=await fetch('/.netlify/functions/order?list=1');
-    if(res.ok){var data=await res.json();if(data.orders&&data.orders.length){DB.orders=data.orders;renderOrders();}}
-  }catch(e){}
+    allBins=await getBins();
+    await Promise.all([loadOrders(),loadCustomers(),loadProducts()]);
+  }catch(e){console.error(e);}
 }
-loadOrdersFromAPI();
+
+async function loadOrders(){
+  var tb=document.getElementById("bodyOrders");
+  tb.innerHTML='<tr><td colspan="7" class="loading">⏳ Đang tải...</td></tr>';
+  var bins=allBins.filter(b=>b.snippetMeta&&b.snippetMeta.name&&b.snippetMeta.name.match(/^AET\d{6}$/));
+  if(!bins.length){tb.innerHTML='<tr><td colspan="7" class="empty">Chưa có đơn hàng nào.<br>Đơn sẽ tự tạo khi khách submit form thanh toán.</td></tr>';return;}
+  var orders=await Promise.all(bins.map(b=>readBin(b._id)));
+  orders=orders.filter(Boolean).sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  tb.innerHTML=orders.map(function(o){
+    return '<tr><td><code style="font-size:.8rem">'+o.orderCode+'</code></td>'
+      +'<td><strong>'+(o.name||'—')+'</strong><br><span style="color:#8a7f6a;font-size:.8rem">'+(o.phone||'')+'</span></td>'
+      +'<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(o.product||'—')+'</td>'
+      +'<td><strong>'+fmtMoney(o.amount)+'</strong></td>'
+      +'<td>'+badge(o.status)+'</td>'
+      +'<td style="font-size:.82rem">'+fmtDate(o.createdAt)+'</td>'
+      +'<td style="white-space:nowrap">'
+      +(o.status!=='success'?'<button class="btn btn-sm btn-green" onclick="markPaid(\''+o._binId+'\',\''+o.orderCode+'\')">✓ Đã TT</button> ':'')
+      +'<button class="btn btn-sm btn-red" onclick="delOrder(\''+o._binId+'\')">×</button></td></tr>';
+  }).join('');
+}
+
+async function loadCustomers(){
+  var tb=document.getElementById("bodyCustomers");
+  var bins=allBins.filter(b=>b.snippetMeta&&b.snippetMeta.name&&b.snippetMeta.name.startsWith("customer_"));
+  if(!bins.length){
+    // Seed 3 khách từ tour thật
+    tb.innerHTML=['<tr><td><strong>Phan Xuân Hữu</strong></td><td>—</td><td>—</td><td>Bán lẻ / bán online (TMĐT)</td><td>01/06/2026</td></tr>',
+      '<tr><td><strong>Chu Thế Mạnh</strong></td><td>—</td><td>—</td><td>Nhập khẩu – phân phối sỉ</td><td>01/06/2026</td></tr>',
+      '<tr><td><strong>Nguyễn Hữu Đức</strong></td><td>—</td><td>—</td><td>Bán lẻ / bán online (TMĐT)</td><td>01/06/2026</td></tr>'].join('');
+    return;
+  }
+  var custs=await Promise.all(bins.map(b=>readBin(b._id)));
+  custs=custs.filter(Boolean);
+  tb.innerHTML=custs.map(function(c){
+    return '<tr><td><strong>'+(c.name||'—')+'</strong></td><td>'+(c.phone||'—')+'</td><td>'+(c.email||'—')+'</td><td>'+(c.sector||'—')+'</td><td>'+fmtDate(c.createdAt)+'</td></tr>';
+  }).join('');
+}
+
+async function loadProducts(){
+  var tb=document.getElementById("bodyProducts");
+  var bins=allBins.filter(b=>b.snippetMeta&&b.snippetMeta.name&&b.snippetMeta.name.startsWith("product_"));
+  if(!bins.length){
+    tb.innerHTML='<tr><td><strong>Tour VIP Nghĩa Ô</strong><br><span style="color:#8a7f6a;font-size:.8rem">7N6Đ khảo sát TMĐT Trung Quốc</span></td><td>Dịch vụ / Tour</td><td><strong>37.500.000đ</strong></td><td>—</td><td><span style="color:#8a7f6a;font-size:.8rem">Mặc định</span></td></tr>';
+    return;
+  }
+  var prods=await Promise.all(bins.map(b=>readBin(b._id)));
+  var typeMap={service:"Dịch vụ / Tour",digital:"Sản phẩm số",physical:"Sản phẩm vật lý"};
+  tb.innerHTML=prods.filter(Boolean).map(function(p){
+    return '<tr><td><strong>'+(p.name||'—')+'</strong></td><td>'+(typeMap[p.type]||p.type)+'</td><td><strong>'+fmtMoney(p.price)+'</strong></td>'
+      +'<td>'+(p.type==='physical'?(p.stock||0)+' cái':'—')+'</td>'
+      +'<td><button class="btn btn-sm btn-red" onclick="delBin(\''+p._binId+'\',\'products\')">×</button></td></tr>';
+  }).join('');
+}
+
+// ===== Actions =====
+async function markPaid(binId,code){
+  if(!confirm('Xác nhận đơn '+code+' đã thanh toán?'))return;
+  var r=await readBin(binId);
+  if(r){await updateBin(binId,{...r,status:'success',paidAt:new Date().toISOString(),_binId:undefined});}
+  await loadAll();
+}
+async function delOrder(binId){
+  if(!confirm('Xóa đơn hàng này?'))return;
+  await deleteBin(binId); allBins=await getBins(); await loadOrders();
+}
+async function delBin(binId,type){
+  if(!confirm('Xóa?'))return;
+  await deleteBin(binId); allBins=await getBins();
+  if(type==='products')await loadProducts();
+}
+
+// ===== Save =====
+function genCode(){return "AET"+String(Math.floor(Math.random()*900000)+100000);}
+async function saveOrder(){
+  var code=document.getElementById("mo_code").value.trim()||genCode();
+  var name=document.getElementById("mo_name").value.trim();
+  if(!name){alert("Nhập tên khách hàng.");return;}
+  var data={orderCode:code,name:name,phone:document.getElementById("mo_phone").value.trim(),
+    email:document.getElementById("mo_email").value.trim(),
+    product:document.getElementById("mo_product").value,
+    amount:document.getElementById("mo_amount").value||18750000,
+    status:document.getElementById("mo_status").value,
+    createdAt:new Date().toISOString()};
+  var binId=document.getElementById("mo_binid").value;
+  if(binId){var r=await readBin(binId); await updateBin(binId,{...r,...data,_binId:undefined});}
+  else await createBin(code,data);
+  closeModal('order'); allBins=await getBins(); await loadOrders();
+}
+async function saveCustomer(){
+  var name=document.getElementById("mc_name").value.trim();
+  var phone=document.getElementById("mc_phone").value.trim();
+  if(!name||!phone){alert("Nhập Họ tên và Điện thoại.");return;}
+  var data={name,phone,email:document.getElementById("mc_email").value.trim(),
+    sector:document.getElementById("mc_sector").value,createdAt:new Date().toISOString()};
+  await createBin("customer_"+Date.now(),data);
+  closeModal('customer'); allBins=await getBins(); await loadCustomers();
+}
+async function saveProduct(){
+  var name=document.getElementById("mp_name").value.trim();
+  if(!name){alert("Nhập tên sản phẩm.");return;}
+  var type=document.getElementById("mp_type").value;
+  var data={name,type,price:document.getElementById("mp_price").value||0,
+    desc:document.getElementById("mp_desc").value,
+    stock:type==='physical'?(parseInt(document.getElementById("mp_stock").value)||0):null,
+    createdAt:new Date().toISOString()};
+  await createBin("product_"+Date.now(),data);
+  closeModal('product'); allBins=await getBins(); await loadProducts();
+}
+
+// ===== Helpers =====
+function fmtMoney(n){return Number(n).toLocaleString('vi-VN')+"đ";}
+function fmtDate(s){if(!s)return"—";return new Date(s).toLocaleDateString('vi-VN');}
+function badge(s){var m={pending:"Chờ thanh toán",success:"Đã thanh toán",cancelled:"Đã hủy"};return'<span class="badge badge-'+s+'">'+(m[s]||s)+'</span>';}
+function switchTab(t,el){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active'); document.getElementById('panel-'+t).classList.add('active');
+}
+function openModal(t){
+  if(t==='order'){document.getElementById('mo_title').textContent='Thêm đơn hàng';
+    ['mo_binid','mo_code','mo_name','mo_phone','mo_email','mo_amount'].forEach(id=>{document.getElementById(id).value='';});
+    document.getElementById('mo_status').value='pending';}
+  document.getElementById('modal-'+t).classList.add('open');
+}
+function closeModal(t){document.getElementById('modal-'+t).classList.remove('open');}
+function toggleStock(){document.getElementById('stockField').style.display=document.getElementById('mp_type').value==='physical'?'block':'none';}
+document.querySelectorAll('.overlay').forEach(el=>el.addEventListener('click',function(e){if(e.target===el)el.classList.remove('open');}));
+
+// Init
+loadAll();
+// Auto-refresh mỗi 30 giây
+setInterval(loadAll, 30000);
 </script>
 </body>
 </html>
