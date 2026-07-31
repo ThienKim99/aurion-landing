@@ -77,7 +77,7 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
       </select>
     </div>
     <div class="field"><label>Số tiền đặt cọc</label>
-      <input value="18.750.000đ (50% giá trị hợp đồng)" disabled>
+      <input value="2.000đ" disabled style="background:#f5f0e6;color:#6b7a86">
     </div>
     <p class="err" id="formErr"></p>
     <button class="btn-pay" id="btnPay" onclick="submitOrder()">Tạo mã thanh toán →</button>
@@ -91,7 +91,7 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
       <div class="row"><span>Ngân hàng</span><strong>TPBank</strong></div>
       <div class="row"><span>Chủ tài khoản</span><strong>LAM NGOC THANH CUONG</strong></div>
       <div class="row"><span>Số tài khoản</span><strong>00006329016</strong></div>
-      <div class="row" style="margin-top:8px"><span>Số tiền</span><span class="amount">18.750.000đ</span></div>
+      <div class="row" style="margin-top:8px"><span>Số tiền</span><span class="amount">2.000đ</span></div>
       <div class="row" style="margin-top:8px;flex-direction:column;align-items:flex-start;gap:6px">
         <span>Nội dung chuyển khoản (BẮT BUỘC)</span>
         <span class="code-badge" id="codeBadge" title="Bấm để copy">AET000000</span>
@@ -119,14 +119,18 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
 </div>
 
 <script>
-var STK="00006329016", BANK="TPBank", HOLDER="LAM%20NGOC%20THANH%20CUONG";
-var DEPOSIT=18750000;
+var STK="00006329016", BANK="TPB", HOLDER="LAM NGOC THANH CUONG";
+var DEPOSIT=2000;
 var currentCode="", pollTimer=null, paid=false;
 
 function genCode(){return "AET"+String(Math.floor(Math.random()*900000)+100000);}
 
 function buildQR(code){
-  return "https://img.vietqr.io/image/"+STK+"-"+BANK+"-compact.png?amount="+DEPOSIT+"&addInfo="+encodeURIComponent(code)+"&accountName="+HOLDER;
+  // VietQR chuẩn: https://img.vietqr.io/image/{BANK}-{STK}-{template}.png
+  return "https://img.vietqr.io/image/"+BANK+"-"+STK+"-compact2.png"
+    +"?amount="+DEPOSIT
+    +"&addInfo="+encodeURIComponent(code)
+    +"&accountName="+encodeURIComponent(HOLDER);
 }
 
 function validate(){
