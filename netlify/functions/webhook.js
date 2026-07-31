@@ -1,83 +1,79 @@
 // netlify/functions/webhook.js
-// Nhận webhook từ Sepay khi có tiền vào TPBank
-// Tự động cập nhật trạng thái đơn hàng: pending -> success
+// Nhận webhook từ Sepay → cập nhật đơn hàng pending -> success trên JSONBin
 
-const SEPAY_API_KEY = "M3RAN0BAZOSEG3WTX6OHSFL9SKJYWZXD5O4C18VKICAPEEUY2R77VH8FZ6YQVVMT";
+const SEPAY_KEY = "M3RAN0BAZOSEG3WTX6OHSFL9SKJYWZXD5O4C18VKICAPEEUY2R77VH8FZ6YQVVMT";
+const JSONBIN_KEY = "$2a$10$xVrPdo4UpUIWmuf7NlPw/eacHNVZpRTsi/fypuRqfxtgVY/IyBvmm";
+const JSONBIN_BASE = "https://api.jsonbin.io/v3/b";
 
 exports.handler = async (event) => {
-  // Chỉ nhận POST
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
-  }
+  if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
 
-  // Xác thực API Key từ header
-  const authHeader = event.headers["authorization"] || event.headers["Authorization"] || "";
-  if (authHeader !== `Apikey ${SEPAY_API_KEY}`) {
-    console.log("Unauthorized webhook:", authHeader);
-    return { statusCode: 401, body: JSON.stringify({ success: false, message: "Unauthorized" }) };
+  // Xác thực Sepay API Key
+  const auth = event.headers["authorization"] || event.headers["Authorization"] || "";
+  if (auth !== `Apikey ${SEPAY_KEY}`) {
+    console.log("Unauthorized:", auth);
+    return { statusCode: 401, body: JSON.stringify({ success: false }) };
   }
 
   let payload;
-  try {
-    payload = JSON.parse(event.body);
-  } catch (e) {
-    return { statusCode: 400, body: JSON.stringify({ success: false, message: "Invalid JSON" }) };
-  }
+  try { payload = JSON.parse(event.body); }
+  catch { return { statusCode: 400, body: JSON.stringify({ success: false }) }; }
 
-  console.log("Sepay webhook received:", JSON.stringify(payload));
+  console.log("Sepay webhook:", JSON.stringify(payload));
 
   // Chỉ xử lý tiền VÀO
-  if (payload.transferType !== "in") {
-    return { statusCode: 200, body: JSON.stringify({ success: true }) };
-  }
+  if (payload.transferType !== "in") return { statusCode: 200, body: JSON.stringify({ success: true }) };
 
   const content = (payload.content || "").toUpperCase();
-  const amount  = payload.transferAmount;
+  const match = content.match(/AET\d{6}/);
+  if (!match) return { statusCode: 200, body: JSON.stringify({ success: true, note: "no AET code" }) };
 
-  // Tìm mã đơn hàng trong nội dung chuyển khoản (dạng AET + 6 số, VD: AET123456)
-  const orderMatch = content.match(/AET\d{6}/);
-  if (!orderMatch) {
-    console.log("Không tìm thấy mã đơn hàng trong nội dung:", content);
-    return { statusCode: 200, body: JSON.stringify({ success: true, note: "no order code found" }) };
-  }
+  const orderCode = match[0];
+  console.log("Cập nhật đơn:", orderCode);
 
-  const orderCode = orderMatch[0];
-  console.log(`Cập nhật đơn ${orderCode} → success, số tiền: ${amount}`);
+  // Tìm bin chứa đơn hàng này trên JSONBin
+  try {
+    // Đọc bin danh sách đơn hàng (lưu tất cả đơn)
+    const listRes = await fetch(`${JSONBIN_BASE}/meta`, {
+      headers: { "X-Master-Key": JSONBIN_KEY, "X-Bin-Name": "aurion-orders" }
+    });
 
-  // Ghi vào Netlify Blobs (KV store) — key: orderCode, value: JSON
-  // Netlify Blobs không cần import, dùng fetch đến internal API
-  const siteId   = process.env.SITE_ID || process.env.NETLIFY_SITE_ID;
-  const token    = process.env.NETLIFY_TOKEN || process.env.NETLIFY_ACCESS_TOKEN;
+    // Tìm bin theo orderCode — dùng search
+    const searchRes = await fetch(`https://api.jsonbin.io/v3/b?search=${orderCode}`, {
+      headers: { "X-Master-Key": JSONBIN_KEY }
+    });
 
-  if (siteId && token) {
-    try {
-      const blobUrl = `https://api.netlify.com/api/v1/sites/${siteId}/blobs/orders/${orderCode}`;
-      // Đọc đơn cũ
-      let order = {};
-      const getRes = await fetch(blobUrl, { headers: { Authorization: `Bearer ${token}` } });
-      if (getRes.ok) {
-        try { order = await getRes.json(); } catch {}
+    // Cách đơn giản hơn: mỗi đơn là 1 bin riêng, tên bin = orderCode
+    // Đọc tất cả bins rồi tìm
+    const binsRes = await fetch("https://api.jsonbin.io/v3/b", {
+      headers: { "X-Master-Key": JSONBIN_KEY }
+    });
+
+    if (binsRes.ok) {
+      const binsData = await binsRes.json();
+      const bins = binsData.result || [];
+      // Tìm bin có tên = orderCode
+      const targetBin = bins.find(b => b.record && b.record.orderCode === orderCode ||
+                                       b.snippetMeta && b.snippetMeta.name === orderCode);
+      if (targetBin) {
+        // Cập nhật bin đó
+        const updateRes = await fetch(`${JSONBIN_BASE}/${targetBin._id}`, {
+          method: "PUT",
+          headers: { "X-Master-Key": JSONBIN_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...targetBin.record,
+            status: "success",
+            paidAt: new Date().toISOString(),
+            paidAmount: payload.transferAmount,
+            transactionId: payload.id
+          })
+        });
+        console.log("Đã cập nhật bin:", targetBin._id);
       }
-      // Cập nhật trạng thái
-      order.status       = "success";
-      order.paidAmount   = amount;
-      order.paidAt       = new Date().toISOString();
-      order.transactionId = payload.id;
-      order.orderCode    = orderCode;
-
-      await fetch(blobUrl, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify(order)
-      });
-      console.log(`Đã lưu đơn ${orderCode} vào Blobs`);
-    } catch (err) {
-      console.error("Lỗi lưu Blobs:", err);
     }
+  } catch(err) {
+    console.error("Lỗi JSONBin:", err);
   }
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ success: true, orderCode, amount })
-  };
+  return { statusCode: 200, body: JSON.stringify({ success: true, orderCode }) };
 };
