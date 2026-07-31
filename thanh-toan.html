@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Thanh toán — Tour VIP Nghĩa Ô | Aurion Elite Travel</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--navy:#114265;--gold:#dfb160;--cream:#fbf7ef;--ink:#1c2b38;--sans:'Noto Sans',sans-serif;--serif:'Noto Serif',serif}
@@ -61,7 +60,11 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
   <h1>Đặt chỗ Tour VIP Nghĩa Ô</h1>
   <p class="sub">7 ngày 6 đêm · Khảo sát TMĐT Trung Quốc · Trọn gói</p>
 
-  <!-- Bước 1: Form -->
+  <div class="card" style="background:#f5f0e6;padding:18px 24px;margin-bottom:16px">
+    <div class="row"><span>Giá tour trọn gói</span><strong style="color:var(--navy);font-size:1.05rem">37.500.000đ / khách</strong></div>
+    <div class="row"><span>Đặt cọc giữ chỗ</span><strong style="color:var(--navy)">2.000đ</strong></div>
+  </div>
+
   <div class="card" id="formCard">
     <h2><span class="step">1</span>Thông tin của bạn</h2>
     <div class="field"><label>Họ và tên *</label><input id="f_name" type="text" placeholder="Nguyễn Văn A"></div>
@@ -76,14 +79,11 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
         <option>Khác</option>
       </select>
     </div>
-    <div class="field"><label>Số tiền đặt cọc</label>
-      <input value="2.000đ" disabled style="background:#f5f0e6;color:#6b7a86">
-    </div>
+    <div class="field"><label>Số tiền đặt cọc</label><input value="2.000đ" disabled></div>
     <p class="err" id="formErr"></p>
     <button class="btn-pay" id="btnPay" onclick="submitOrder()">Tạo mã thanh toán →</button>
   </div>
 
-  <!-- Bước 2: QR -->
   <div class="card" id="qrSection">
     <h2><span class="step">2</span>Quét QR chuyển khoản</h2>
     <div class="qr-wrap"><img id="qrImg" src="" alt="QR thanh toán"></div>
@@ -99,9 +99,7 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
     </div>
     <p class="note">⚠️ Nhập ĐÚNG nội dung chuyển khoản để hệ thống tự xác nhận</p>
 
-    <div class="status-bar s-pending" id="statusPending">
-      <span id="spinner"></span>Đang chờ thanh toán...
-    </div>
+    <div class="status-bar s-pending" id="statusPending"><span id="spinner"></span>Đang chờ thanh toán...</div>
     <div class="status-bar s-success" id="statusSuccess">✅ Đã xác nhận thanh toán!</div>
 
     <div id="successMsg">
@@ -112,9 +110,7 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
       Hotline: <strong>0377.469.392</strong></p>
     </div>
 
-    <button class="manual-btn" id="btnManual" onclick="checkManual()">
-      Tôi đã chuyển khoản nhưng chưa thấy xác nhận →
-    </button>
+    <button class="manual-btn" id="btnManual" onclick="checkManual()">Tôi đã chuyển khoản nhưng chưa thấy xác nhận →</button>
   </div>
 </div>
 
@@ -122,24 +118,19 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
 var STK="00006329016", BANK="TPB", HOLDER="LAM NGOC THANH CUONG";
 var DEPOSIT=2000;
 var currentCode="", pollTimer=null, paid=false;
+var API="/.netlify/functions/order";
 
 function genCode(){return "AET"+String(Math.floor(Math.random()*900000)+100000);}
-
 function buildQR(code){
-  // VietQR chuẩn: https://img.vietqr.io/image/{BANK}-{STK}-{template}.png
-  return "https://img.vietqr.io/image/"+BANK+"-"+STK+"-compact2.png"
-    +"?amount="+DEPOSIT
-    +"&addInfo="+encodeURIComponent(code)
-    +"&accountName="+encodeURIComponent(HOLDER);
+  return "https://img.vietqr.io/image/"+BANK+"-"+STK+"-compact2.png?amount="+DEPOSIT+"&addInfo="+encodeURIComponent(code)+"&accountName="+encodeURIComponent(HOLDER);
 }
-
 function validate(){
   var n=document.getElementById("f_name").value.trim();
   var p=document.getElementById("f_phone").value.trim();
   var e=document.getElementById("f_email").value.trim();
   var err=document.getElementById("formErr");
   if(!n){err.textContent="Vui lòng nhập Họ tên.";err.style.display="block";return false;}
-  if(!p||!/^0\d{8,10}$/.test(p.replace(/\s/g,""))){err.textContent="Số điện thoại không hợp lệ (bắt đầu bằng 0, 9-11 số).";err.style.display="block";return false;}
+  if(!p||!/^0\d{8,10}$/.test(p.replace(/\s/g,""))){err.textContent="Số điện thoại không hợp lệ.";err.style.display="block";return false;}
   if(!e||!/^[^@]+@[^@]+\.[^@]+$/.test(e)){err.textContent="Email không hợp lệ.";err.style.display="block";return false;}
   err.style.display="none";return true;
 }
@@ -148,7 +139,6 @@ async function submitOrder(){
   if(!validate())return;
   var btn=document.getElementById("btnPay");
   btn.disabled=true; btn.textContent="Đang tạo mã...";
-
   currentCode=genCode();
   var order={
     orderCode:currentCode,
@@ -157,74 +147,51 @@ async function submitOrder(){
     email:document.getElementById("f_email").value.trim(),
     sector:document.getElementById("f_sector").value,
     product:"Tour VIP Nghĩa Ô — Đặt cọc 50%",
-    amount:DEPOSIT,
-    status:"pending"
+    amount:DEPOSIT
   };
-
-  // Gửi đơn lên Netlify Function → JSONBin
   try{
-    var r=await fetch("/.netlify/functions/order",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(order)
-    });
-    var d=await r.json();
-    console.log("Tạo đơn:", d);
-  }catch(e){console.log("Function lỗi:",e);}
+    await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(order)});
+  }catch(e){console.log("Lỗi tạo đơn:",e);}
 
-  // Hiện QR
   document.getElementById("qrImg").src=buildQR(currentCode);
   document.getElementById("codeBadge").textContent=currentCode;
   document.getElementById("formCard").style.display="none";
   document.getElementById("qrSection").style.display="block";
   window.scrollTo(0,0);
 
-  // Copy mã khi bấm
   document.getElementById("codeBadge").onclick=function(){
     navigator.clipboard.writeText(currentCode).then(function(){
-      var el=document.getElementById("codeBadge");
-      var old=el.textContent; el.textContent="✅ Đã copy!";
-      setTimeout(function(){el.textContent=old;},1500);
+      var el=document.getElementById("codeBadge"); var old=el.textContent;
+      el.textContent="✅ Đã copy!"; setTimeout(function(){el.textContent=old;},1500);
     });
   };
-
   startPolling(currentCode);
 }
 
 function startPolling(code){
   if(pollTimer)clearInterval(pollTimer);
   pollTimer=setInterval(function(){checkStatus(code);},4000);
-  // Tự dừng sau 30 phút
   setTimeout(function(){if(pollTimer)clearInterval(pollTimer);},30*60*1000);
 }
-
 async function checkStatus(code){
   if(paid)return;
   try{
-    var r=await fetch("/.netlify/functions/order?code="+code);
-    if(!r.ok)return;
+    var r=await fetch(API+"?action=check&code="+code);
     var d=await r.json();
-    if(d.status==="success"){
-      paid=true;
-      clearInterval(pollTimer);
-      showSuccess();
-    }
-  }catch(e){/* retry sau */}
+    if(d.status==="success"){paid=true;clearInterval(pollTimer);showSuccess();}
+  }catch(e){}
 }
-
 async function checkManual(){
   var btn=document.getElementById("btnManual");
   btn.textContent="Đang kiểm tra..."; btn.disabled=true;
   try{
-    var r=await fetch("/.netlify/functions/order?code="+currentCode);
+    var r=await fetch(API+"?action=check&code="+currentCode);
     var d=await r.json();
     if(d.status==="success"){showSuccess();return;}
   }catch(e){}
-  alert("Hệ thống chưa ghi nhận giao dịch.\n\nVui lòng gọi Aurion: 0377.469.392\nChụp màn hình chuyển khoản gửi qua Zalo để xác nhận thủ công.");
-  btn.textContent="Tôi đã chuyển khoản nhưng chưa thấy xác nhận →";
-  btn.disabled=false;
+  alert("Hệ thống chưa ghi nhận giao dịch.\n\nGọi Aurion: 0377.469.392 hoặc chụp màn hình chuyển khoản gửi Zalo để xác nhận thủ công.");
+  btn.textContent="Tôi đã chuyển khoản nhưng chưa thấy xác nhận →"; btn.disabled=false;
 }
-
 function showSuccess(){
   document.getElementById("statusPending").style.display="none";
   document.getElementById("statusSuccess").style.display="block";
