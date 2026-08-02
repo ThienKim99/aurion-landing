@@ -538,7 +538,8 @@
         email=document.getElementById('email').value.trim(),
         kenh=rv('kenh'),loinhan=document.getElementById('loinhan').value.trim();
     var status=document.getElementById('formStatus');
-    if(!ten||!sdt){status.style.color='#c0392b';status.textContent='Vui lòng nhập Họ tên và Số điện thoại để chúng tôi liên hệ lại.';return;}
+    if(!ten){status.style.color='#c0392b';status.textContent='Vui lòng nhập Họ tên.';return;}
+    if(!sdt||!/^0\d{8,10}$/.test(sdt.replace(/\s/g,''))){status.style.color='#c0392b';status.textContent='Số điện thoại không hợp lệ (bắt đầu bằng 0, đủ 9-11 số).';return;}
     if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){status.style.color='#c0392b';status.textContent='Vui lòng nhập email hợp lệ để nhận thông tin từ Aurion.';return;}
 
     // Nếu chưa cấu hình Sheet -> tạm thời mở email như trước (form vẫn dùng được)
@@ -576,7 +577,8 @@
     var ten=document.getElementById('s_ten').value.trim(),sdt=document.getElementById('s_sdt').value.trim();
     var linhvuc=rv('s_linhvuc'),quymo=rv('s_quymo'),mongmuon=rv('s_mongmuon'),thoidiem=rv('s_thoidiem');
     if(linhvuc==='Khác'){var _k=document.getElementById('s_linhvuc_khac').value.trim();if(_k)linhvuc='Khác: '+_k;}
-    if(!ten||!sdt){st.style.color='#c0392b';st.textContent='Vui lòng nhập Họ tên và Số điện thoại/Zalo.';return;}
+    if(!ten){st.style.color='#c0392b';st.textContent='Vui lòng nhập Họ tên.';return;}
+    if(!sdt||!/^0\d{8,10}$/.test(sdt.replace(/\s/g,''))){st.style.color='#c0392b';st.textContent='Số điện thoại không hợp lệ (bắt đầu bằng 0, đủ 9-11 số).';return;}
     if(SHEET_ENDPOINT.indexOf('http')!==0){
       var subject='Khảo sát tour: '+ten;
       var body='Họ tên: '+ten+'\n'+'SĐT/Zalo: '+sdt+'\n'+'Lĩnh vực: '+linhvuc+'\n'+'Quy mô: '+quymo+'\n'+'Mong muốn: '+mongmuon+'\n'+'Thời điểm: '+thoidiem+'\n';
