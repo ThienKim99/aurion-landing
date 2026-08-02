@@ -1,11 +1,11 @@
 [build]
   functions = "netlify/functions"
-
+ 
 [[redirects]]
   from = "/thanh-toan"
   to   = "/thanh-toan.html"
   status = 200
-
+ 
 [[redirects]]
   from = "/admin"
   to   = "/admin.html"
