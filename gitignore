@@ -1,0 +1,9 @@
+# Không commit file chứa secret thật
+.env
+.env.local
+*.env
+
+# File hệ điều hành/editor thường gặp
+.DS_Store
+node_modules/
+*.log
