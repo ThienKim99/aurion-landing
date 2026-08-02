@@ -59,12 +59,12 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
 <div class="wrap">
   <h1>Đặt chỗ Tour VIP Nghĩa Ô</h1>
   <p class="sub">7 ngày 6 đêm · Khảo sát TMĐT Trung Quốc · Trọn gói</p>
-
+ 
   <div class="card" style="background:#f5f0e6;padding:18px 24px;margin-bottom:16px">
     <div class="row"><span>Giá tour trọn gói</span><strong style="color:var(--navy);font-size:1.05rem">37.500.000đ / khách</strong></div>
     <div class="row"><span>Đặt cọc giữ chỗ</span><strong style="color:var(--navy)">2.000đ</strong></div>
   </div>
-
+ 
   <div class="card" id="formCard">
     <h2><span class="step">1</span>Thông tin của bạn</h2>
     <div class="field"><label>Họ và tên *</label><input id="f_name" type="text" placeholder="Nguyễn Văn A"></div>
@@ -83,7 +83,7 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
     <p class="err" id="formErr"></p>
     <button class="btn-pay" id="btnPay" onclick="submitOrder()">Tạo mã thanh toán →</button>
   </div>
-
+ 
   <div class="card" id="qrSection">
     <h2><span class="step">2</span>Quét QR chuyển khoản</h2>
     <div class="qr-wrap"><img id="qrImg" src="" alt="QR thanh toán"></div>
@@ -98,10 +98,10 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
       </div>
     </div>
     <p class="note">⚠️ Nhập ĐÚNG nội dung chuyển khoản để hệ thống tự xác nhận</p>
-
+ 
     <div class="status-bar s-pending" id="statusPending"><span id="spinner"></span>Đang chờ thanh toán...</div>
     <div class="status-bar s-success" id="statusSuccess">✅ Đã xác nhận thanh toán!</div>
-
+ 
     <div id="successMsg">
       <div class="icon">🎉</div>
       <h2>Thanh toán thành công!</h2>
@@ -109,17 +109,17 @@ h1{font-family:var(--serif);color:var(--navy);font-size:1.7rem;margin-bottom:6px
       Chuyên viên sẽ liên hệ xác nhận chỗ trong vòng <strong>24h</strong>.<br>
       Hotline: <strong>0377.469.392</strong></p>
     </div>
-
+ 
     <button class="manual-btn" id="btnManual" onclick="checkManual()">Tôi đã chuyển khoản nhưng chưa thấy xác nhận →</button>
   </div>
 </div>
-
+ 
 <script>
 var STK="00006329016", BANK="TPB", HOLDER="LAM NGOC THANH CUONG";
 var DEPOSIT=2000;
 var currentCode="", pollTimer=null, paid=false;
 var API="/.netlify/functions/order";
-
+ 
 function genCode(){return "AET"+String(Math.floor(Math.random()*900000)+100000);}
 function buildQR(code){
   return "https://img.vietqr.io/image/"+BANK+"-"+STK+"-compact2.png?amount="+DEPOSIT+"&addInfo="+encodeURIComponent(code)+"&accountName="+encodeURIComponent(HOLDER);
@@ -134,7 +134,7 @@ function validate(){
   if(!e||!/^[^@]+@[^@]+\.[^@]+$/.test(e)){err.textContent="Email không hợp lệ.";err.style.display="block";return false;}
   err.style.display="none";return true;
 }
-
+ 
 async function submitOrder(){
   if(!validate())return;
   var btn=document.getElementById("btnPay");
@@ -152,13 +152,13 @@ async function submitOrder(){
   try{
     await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(order)});
   }catch(e){console.log("Lỗi tạo đơn:",e);}
-
+ 
   document.getElementById("qrImg").src=buildQR(currentCode);
   document.getElementById("codeBadge").textContent=currentCode;
   document.getElementById("formCard").style.display="none";
   document.getElementById("qrSection").style.display="block";
   window.scrollTo(0,0);
-
+ 
   document.getElementById("codeBadge").onclick=function(){
     navigator.clipboard.writeText(currentCode).then(function(){
       var el=document.getElementById("codeBadge"); var old=el.textContent;
@@ -167,7 +167,7 @@ async function submitOrder(){
   };
   startPolling(currentCode);
 }
-
+ 
 function startPolling(code){
   if(pollTimer)clearInterval(pollTimer);
   pollTimer=setInterval(function(){checkStatus(code);},4000);
